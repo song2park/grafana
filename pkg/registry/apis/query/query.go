@@ -217,8 +217,8 @@ func (b *QueryAPIBuilder) execute(ctx context.Context, req parsedRequestInfo) (q
 		}
 	}
 
-	if err != nil {
-		b.log.Debug("error in query phase, skipping expressions", "error", err)
+	if err != nil || checkResponseForError(qdr) {
+		b.log.Debug("error in query phase, skipping expressions", "error", err, "qdr", qdr)
 		return qdr, err //return early here to prevent expressions from being executed if we got an error during the query phase
 	}
 
@@ -239,6 +239,15 @@ func (b *QueryAPIBuilder) execute(ctx context.Context, req parsedRequestInfo) (q
 	}
 
 	return qdr, err
+}
+
+func checkResponseForError(qdr *backend.QueryDataResponse) (error bool) {
+	for _, response := range qdr.Responses {
+		if response.Error != nil {
+			return true
+		}
+	}
+	return false
 }
 
 // Process a single request
