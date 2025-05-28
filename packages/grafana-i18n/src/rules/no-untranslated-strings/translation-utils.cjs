@@ -190,7 +190,7 @@ function getTranslationPrefix(context) {
 
 /**
  * Gets the i18n key for a node
- * @param {JSXAttribute|JSXText|Property|JSXExpressionContainer} node The node
+ * @param {JSXAttribute|JSXText|Property|JSXExpressionContainer|Literal} node The node
  * @param {RuleContextWithOptions} context
  * @returns {string} The i18n key
  */
@@ -251,7 +251,7 @@ const getI18nKey = (node, context) => {
 
 /**
  * Gets component names from ancestors
- * @param {JSXAttribute|JSXText|Property|JSXExpressionContainer} node The node
+ * @param {JSXAttribute|JSXText|Property|JSXExpressionContainer|Literal} node The node
  * @param {RuleContextWithOptions} context
  * @returns {string[]} The component names
  */
@@ -311,7 +311,7 @@ function methodHasUseTranslate(node, context) {
 
 /**
  * Gets the import fixer for a node
- * @param {JSXElement|JSXFragment|JSXAttribute|Property} node
+ * @param {Node} node
  * @param {RuleFixer} fixer The fixer
  * @param {'Trans'|'t'|'useTranslate'} importName The member to import from either `@grafana/i18n` or `@grafana/i18n/internal`
  * @param {RuleContextWithOptions} context
@@ -405,7 +405,7 @@ const firstCharIsUpper = (str) => {
 };
 
 /**
- * @param {JSXAttribute|Property} node
+ * @param {Node} node
  * @param {RuleFixer} fixer
  * @param {RuleContextWithOptions} context
  * @returns {import('@typescript-eslint/utils/ts-eslint').RuleFix|undefined} The fix

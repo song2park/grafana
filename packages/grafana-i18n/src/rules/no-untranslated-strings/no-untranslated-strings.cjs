@@ -187,10 +187,10 @@ const noUntranslatedStrings = createRule({
          */
         const isExpressionUntranslated = (expr) => {
           return (
-            expr.type === AST_NODE_TYPES.Literal &&
-            typeof expr.value === 'string' &&
-            stringShouldBeTranslated(expr.value)
-            // || expr.type === AST_NODE_TYPES.TemplateLiteral
+            (expr.type === AST_NODE_TYPES.Literal &&
+              typeof expr.value === 'string' &&
+              stringShouldBeTranslated(expr.value)) ||
+            expr.type === AST_NODE_TYPES.TemplateLiteral
           );
         };
 
