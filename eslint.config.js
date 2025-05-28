@@ -55,7 +55,7 @@ module.exports = [
     ],
   },
   // Conditionally run the betterer rules if enabled in dev's config
-  ...(enableBettererRules ? bettererConfig : []),
+  // ...(enableBettererRules ? bettererConfig : []),
   grafanaConfig,
   {
     name: 'react/jsx-runtime',

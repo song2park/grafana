@@ -10,6 +10,8 @@ import { withPageErrorBoundary } from '../../withPageErrorBoundary';
 import { AlertmanagerPageWrapper } from '../AlertingPageWrapper';
 import { EditReceiverView } from '../receivers/EditReceiverView';
 
+const foo = <div>{`a`}</div>;
+
 const EditContactPoint = () => {
   const { selectedAlertmanager } = useAlertmanager();
   const { name = '' } = useParams();
@@ -29,7 +31,7 @@ const EditContactPoint = () => {
   if (error) {
     return (
       <Alert
-        severity="error"
+        label={'warning'}
         title={t('alerting.edit-contact-point.title-failed-to-fetch-contact-point', 'Failed to fetch contact point')}
       >
         {stringifyErrorLike(error)}

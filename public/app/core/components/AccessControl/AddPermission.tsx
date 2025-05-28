@@ -1,3 +1,4 @@
+/* eslint-enable react/jsx-no-literals */
 import { useEffect, useMemo, useState } from 'react';
 
 import { Trans } from '@grafana/i18n';

@@ -185,6 +185,60 @@ ruleTester.run('eslint no-untranslated-strings', noUntranslatedStrings, {
     },
   ],
   invalid: [
+    {
+      name: 'JSXExpressionContainer - string literal',
+      code: `<div>{'a'}</div>`,
+      errors: 1,
+    },
+    {
+      name: 'JSXExpressionContainer - template literal',
+      code: `<div>{\`a\`}</div>`,
+      errors: 1,
+    },
+    {
+      name: 'JSXExpressionContainer - ternary',
+      code: `<div>{foo ? 'a' : 'b'}</div>`,
+      errors: 2,
+    },
+    {
+      name: 'JSXExpressionContainer - ternary with nonalphanumeric',
+      code: `
+const Foo = () => <div>{foo ? 'hello' : '?'}</div>`,
+      errors: [
+        {
+          messageId: 'noUntranslatedStrings',
+          suggestions: [
+            {
+              messageId: 'wrapWithT',
+              output: `
+${T_IMPORT}
+const Foo = () => <div>{foo ? t("some-feature.foo.hello", "hello") : '?'}</div>`,
+            },
+          ],
+        },
+      ],
+      filename,
+    },
+    {
+      name: 'JSXExpressionContainer - conditional expression',
+      code: `
+const Foo = () => <div>{foo || 'a'}</div>`,
+      errors: [
+        {
+          messageId: 'noUntranslatedStrings',
+          suggestions: [
+            {
+              messageId: 'wrapWithT',
+              output: `
+${T_IMPORT}
+const Foo = () => <div>{foo || t("some-feature.foo.a", "a")}</div>`,
+            },
+          ],
+        },
+      ],
+      filename,
+    },
+
     /**
      * FIXABLE CASES
      */
@@ -322,7 +376,7 @@ const Foo = () => <div><TestingComponent someProp={<>Test</>} /></div>`,
               messageId: 'wrapWithTrans',
               output: `
 ${TRANS_IMPORT}
-const Foo = () => <div><TestingComponent someProp={<><Trans i18nKey="some-feature.foo.test">Test</Trans></>} /></div>`,
+const Foo = () => <div><TestingComponent someProp={<><Trans i18nKey="some-feature.foo.some-prop-test">Test</Trans></>} /></div>`,
             },
           ],
         },
@@ -405,6 +459,31 @@ const foo = function() {
 ${T_IMPORT}
 const foo = function() {
   return <div title={t("some-feature.foo.title-foo", "foo")} />;
+}`,
+            },
+          ],
+        },
+      ],
+    },
+
+    {
+      name: 'Fixes using useTranslate when inside something named like a React hook',
+      code: `
+const useFoo = () => {
+  return { label: 'foo' };
+}`,
+      filename,
+      errors: [
+        {
+          messageId: 'noUntranslatedStringsProperties',
+          suggestions: [
+            {
+              messageId: 'wrapWithT',
+              output: `
+${USE_TRANSLATE_IMPORT}
+const useFoo = () => {
+  const { t } = useTranslate();
+return { label: t("some-feature.use-foo.label.foo", "foo") };
 }`,
             },
           ],
@@ -578,7 +657,7 @@ const Foo = () => {
       filename,
       errors: [
         {
-          messageId: 'noUntranslatedStringsProp',
+          messageId: 'noUntranslatedStrings',
           suggestions: [
             {
               messageId: 'wrapWithT',
@@ -701,7 +780,7 @@ const Foo = () => <div title={"foo"} />`,
       filename,
       errors: [
         {
-          messageId: 'noUntranslatedStringsProp',
+          messageId: 'noUntranslatedStrings',
           suggestions: [
             {
               messageId: 'wrapWithT',
@@ -1025,7 +1104,7 @@ const Foo = () => {
       name: 'Cannot fix JSXExpression in attribute if it is template literal',
       code: `const Foo = () => <div title={\`foo\`} />`,
       filename,
-      errors: [{ messageId: 'noUntranslatedStringsProp' }],
+      errors: [{ messageId: 'noUntranslatedStrings' }],
     },
 
     {
@@ -1036,22 +1115,86 @@ const Foo = () => {
     },
 
     {
-      name: 'Invalid when ternary with string literals - both',
-      code: `const Foo = () => <div>{isAThing ? 'Foo' : 'Bar'}</div>`,
+      name: 'Invalid when ternary in JSXAttribute',
+      code: `<div title={foo ? 'a' : 'b'} />`,
       filename,
-      errors: [{ messageId: 'noUntranslatedStrings' }, { messageId: 'noUntranslatedStrings' }],
+      errors: 2,
+    },
+    {
+      name: 'Invalid when ternary with string literals - both',
+      code: `
+const Foo = () => <div>{isAThing ? 'Foo' : 'Bar'}</div>`,
+      filename,
+      errors: [
+        {
+          messageId: 'noUntranslatedStrings',
+          suggestions: [
+            {
+              messageId: 'wrapWithT',
+              output: `
+${T_IMPORT}
+const Foo = () => <div>{isAThing ? t("some-feature.foo.foo", "Foo") : 'Bar'}</div>`,
+            },
+          ],
+        },
+        {
+          messageId: 'noUntranslatedStrings',
+          suggestions: [
+            {
+              messageId: 'wrapWithT',
+              output: `
+${T_IMPORT}
+const Foo = () => <div>{isAThing ? 'Foo' : t("some-feature.foo.bar", "Bar")}</div>`,
+            },
+          ],
+        },
+      ],
     },
     {
       name: 'Invalid when ternary with string literals - alternate',
       code: `const Foo = () => <div>{isAThing ? 'Foo' : 1}</div>`,
       filename,
-      errors: [{ messageId: 'noUntranslatedStrings' }],
+      errors: 1,
     },
     {
       name: 'Invalid when ternary with string literals - prop',
-      code: `const Foo = () => <div title={isAThing ? 'Foo' : 'Bar'} />`,
+      code: `
+const Foo = () => {
+  return <div title={isAThing ? 'Foo' : 'Bar'} />
+}`,
       filename,
-      errors: [{ messageId: 'noUntranslatedStringsProp' }, { messageId: 'noUntranslatedStringsProp' }],
+      errors: [
+        {
+          messageId: 'noUntranslatedStringsProp',
+
+          suggestions: [
+            {
+              messageId: 'wrapWithT',
+              output: `
+${USE_TRANSLATE_IMPORT}
+const Foo = () => {
+  const { t } = useTranslate();
+return <div title={isAThing ? t("some-feature.foo.title-foo", "Foo") : 'Bar'} />
+}`,
+            },
+          ],
+        },
+        {
+          messageId: 'noUntranslatedStringsProp',
+
+          suggestions: [
+            {
+              messageId: 'wrapWithT',
+              output: `
+${USE_TRANSLATE_IMPORT}
+const Foo = () => {
+  const { t } = useTranslate();
+return <div title={isAThing ? 'Foo' : t("some-feature.foo.title-bar", "Bar")} />
+}`,
+            },
+          ],
+        },
+      ],
     },
 
     {
